@@ -4,19 +4,18 @@ var myScore;
 var myBackground;
 
 function startGame() {
-    myBackground = new component(480, 270, "img/bg.png", 0, 0, "background")
+    myBackground = new component(480, 270, "img/bg.png", 0, 0, "background");
     myGamePiece = new component(30, 24, "img/ship1.png", 10, 120, "image", "true");
     myScore = new component("18px", "Consolas", "white", 360, 40, "text");
     myGameArea.start();
 }
 
 var myGameArea = {
-    canvas: document.createElement("canvas"),
+    canvas: document.getElementById("canvas"),
     start: function() {
         this.canvas.width = 480;
         this.canvas.height = 270;
         this.context = this.canvas.getContext("2d");
-        document.getElementById('wrapper').insertBefore(this.canvas, document.getElementById('wrapper').childNodes[0]);
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20);
         window.addEventListener('keydown', function (e) {
@@ -147,10 +146,10 @@ function updateGameArea() {
         XXtop2 = Math.floor(Math.random() * (maxTop-minTop+1) + minTop);
         
         if(myGameArea.frameNo > 400 ){
-            myObstacles.push( new component(height, height, "violet", x, XXtop2));
-            myObstacles.push( new component(height, height, "grey", x + XXleft, XXtop));
+            myObstacles.push( new component(height, height, "img/asteroid1.png", x, XXtop2, "image"));
+            myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "image"));
         } else {
-            myObstacles.push( new component(height, height, "grey", x + XXleft, XXtop));
+            myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "image"));
         }
         
     }
@@ -173,10 +172,19 @@ function updateGameArea() {
     myGamePiece.update();
 }
 
+function restart() {
+    clearInterval(myGameArea.interval);
+    myGamePiece = 0;
+    myObstacles = [];
+    myScore = 0;
+    myBackground = 0;
+    myGameArea.context.clearRect(0,0, this.canvas.width, this.canvas.height);
+    startGame();
+}
 
-
-
-
+function pause() {
+    clearInterval(myGameArea.interval);
+}
 
 
 
