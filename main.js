@@ -28,7 +28,8 @@ $(document).ready(function() {
         var value = $('#form input').val();
         $('#wyniki input:first-child').val(value);
         $('canvas').addClass('active');
-        $('#form button').blur();
+        $('.btns').addClass('active');
+        $('#form button, #form input').blur();
         startGame();
     });
     
