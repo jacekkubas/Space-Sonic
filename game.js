@@ -2,10 +2,13 @@ var myGamePiece;
 var myObstacles = [];
 var myScore;
 var myBackground;
+var bullets = [];
+var wynik;
+var name;
 
 function startGame() {
     myBackground = new component(480, 270, "img/bg.png", 0, 0, "background");
-    myGamePiece = new component(30, 24, "img/ship1.png", 10, 120, "image", "true");
+    myGamePiece = new component(30, 24, "img/ship1.png", 10, 120, "ship");
     myScore = new component("18px", "Consolas", "white", 360, 40, "text");
     myGameArea.start();
 }
@@ -22,6 +25,11 @@ var myGameArea = {
             myGamePiece.image.src = 'img/ship2.png';
             myGameArea.keys = (myGameArea.keys || []);
             myGameArea.keys[e.keyCode] = true;
+            if (e.keyCode == 32) {
+                if(bullets.length < 1){
+                    bullets.push(new component(1, 20, "#fff", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 15, "bullet"));
+                }
+            }
         })
         window.addEventListener('keyup', function (e) {
             myGamePiece.image.src = 'img/ship1.png';
@@ -33,6 +41,8 @@ var myGameArea = {
     },
     stop: function() {
         clearInterval(this.interval);
+        $('#wyniki input:nth-child(2)').val(myGameArea.frameNo);
+        $('#wyniki').submit();
     }
 }
 
@@ -43,30 +53,45 @@ function everyinterval(n) {
 
 function component(width, height, color, x, y, type, ship) {
     this.type = type
-    if (type == "image" || type == "background"){
+    if (type == "image" || type == "background" || type == "obstacle" || type == "ship"){
         this.image = new Image();
         this.image.src = color;
         this.bum = new Image();
         this.bum.src = "img/bum.gif";
     }
-    this.ship = ship;
     this.width = width;
     this.height = height;
     this.speedX = 0;
     this.speedY = 0;
     this.x = x;
     this.y = y;
+    if (type == 'ship') {
+        this.ship = true;
+    }
     this.update = function() {
         ctx = myGameArea.context;
         if (type == "text") {
             ctx.font = this.width + " " + this.height;
             ctx.fillStyle = color;
             ctx.fillText(this.text, this.x, this.y);
-        } else if (type == "image" || type == "background"){
+        } else if (type == "image" || type == "background" || type == "ship"){
                 ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
             if (type == "background") {
                 ctx.drawImage(this.image, 
                 this.x + this.width, this.y, this.width, this.height);
+            }
+        } else if (type == "bullet") {
+            if (this.x > myGameArea.canvas.width){
+                bullets.shift();
+            } else {
+                ctx.fillStyle = color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        } else if (type == "obstacle") {
+            if (this.x < -100){
+                myObstacles.shift();
+            } else {
+                ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
             }
         } else {
             ctx.fillStyle = color;
@@ -74,7 +99,7 @@ function component(width, height, color, x, y, type, ship) {
         }
     }
     this.newPos = function() {
-        if (this.ship == "true") {
+        if (this.type == "ship") {
             if ( this.y <= 0){
             this.y = 1;
             } else if (this.y + this.height >= myGameArea.canvas.height) {
@@ -119,6 +144,7 @@ function component(width, height, color, x, y, type, ship) {
 }
 
 function updateGameArea() {
+    // crash
     var x, y;
     for ( var i = 0; i < myObstacles.length; i++) {
         if (myGamePiece.crashWith(myObstacles[i])) {
@@ -127,10 +153,14 @@ function updateGameArea() {
             return;
         }
     }
+    
+    // clear
     myGameArea.clear();
     myBackground.speedX = -1; 
     myBackground.newPos();
     myBackground.update();
+    
+    //obstacles
     myGameArea.frameNo += 1;
     if (myGameArea.frameNo == 1 || everyinterval(50)) {
         x = myGameArea.canvas.width;
@@ -146,27 +176,51 @@ function updateGameArea() {
         XXtop2 = Math.floor(Math.random() * (maxTop-minTop+1) + minTop);
         
         if(myGameArea.frameNo > 400 ){
-            myObstacles.push( new component(height, height, "img/asteroid1.png", x, XXtop2, "image"));
-            myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "image"));
+            myObstacles.push( new component(height, height, "img/asteroid1.png", x, XXtop2, "obstacle"));
+            myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "obstacle"));
         } else {
-            myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "image"));
+            myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "obstacle"));
         }
         
     }
-    for (var i = 0; i<myObstacles.length; i++) {
-        myObstacles[i].x += -2;
-        myObstacles[i].update();
+    for (var i = 0; i < myObstacles.length; i++) {
+        if (myObstacles[i].hit == true){
+            myObstacles[i].x += -1;
+            myObstacles[i].update();
+        } else {
+            myObstacles[i].x += -2;
+            myObstacles[i].update();
+        }
+        
     }
     
+    // bullets
+    for (var i = 0; i<bullets.length; i++) {
+        bullets[i].x += 3;
+        bullets[i].update();
+    }
+    for (var i = 0; i < bullets.length; i++){
+        var that = i;
+        for ( var i = 0; i < myObstacles.length; i++) {
+            if (bullets[that].crashWith(myObstacles[i])) {
+                myObstacles[i].hit = true;
+            }
+        }
+    }
+        
+    
+    // score
     myScore.text="SCORE: " + myGameArea.frameNo;
     myScore.update();
     
+    
+    // my game piece
     myGamePiece.speedX = 0;
     myGamePiece.speedY = 0;
-    
     if (myGameArea.keys && myGameArea.keys[38]) {myGamePiece.speedY = -2; }
     if (myGameArea.keys && myGameArea.keys[40]) {myGamePiece.speedY = 2; }
     if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece.speedX = -2; }
+    if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = 2; }
     if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = 2; }
     myGamePiece.newPos();
     myGamePiece.update();
