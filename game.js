@@ -4,7 +4,7 @@ var myScore;
 var myBackground;
 
 function startGame() {
-    myBackground = new component(480, 270, "img/bg.png", 0, 0, "image")
+    myBackground = new component(480, 270, "img/bg.png", 0, 0, "background")
     myGamePiece = new component(30, 24, "img/ship1.png", 10, 120, "image", "true");
     myScore = new component("18px", "Consolas", "white", 360, 40, "text");
     myGameArea.start();
@@ -16,7 +16,7 @@ var myGameArea = {
         this.canvas.width = 480;
         this.canvas.height = 270;
         this.context = this.canvas.getContext("2d");
-        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        document.getElementById('wrapper').insertBefore(this.canvas, document.getElementById('wrapper').childNodes[0]);
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20);
         window.addEventListener('keydown', function (e) {
@@ -44,7 +44,7 @@ function everyinterval(n) {
 
 function component(width, height, color, x, y, type, ship) {
     this.type = type
-    if (this.type == "image"){
+    if (type == "image" || type == "background"){
         this.image = new Image();
         this.image.src = color;
         this.bum = new Image();
@@ -59,12 +59,16 @@ function component(width, height, color, x, y, type, ship) {
     this.y = y;
     this.update = function() {
         ctx = myGameArea.context;
-        if (this.type == "text") {
+        if (type == "text") {
             ctx.font = this.width + " " + this.height;
             ctx.fillStyle = color;
             ctx.fillText(this.text, this.x, this.y);
-        } else if (this.type == "image"){
+        } else if (type == "image" || type == "background"){
                 ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+            if (type == "background") {
+                ctx.drawImage(this.image, 
+                this.x + this.width, this.y, this.width, this.height);
+            }
         } else {
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -86,6 +90,11 @@ function component(width, height, color, x, y, type, ship) {
          else {
             this.x += this.speedX;
             this.y += this.speedY;
+             if (this.type == "background") {
+                if (this.x == -(this.width)) {
+                    this.x = 0;
+                }
+            }
         }
         
     }
@@ -138,10 +147,10 @@ function updateGameArea() {
         XXtop2 = Math.floor(Math.random() * (maxTop-minTop+1) + minTop);
         
         if(myGameArea.frameNo > 400 ){
-            myObstacles.push( new component(height, height, "red", x, XXtop2));
-            myObstacles.push( new component(height, height, "green", x + XXleft, XXtop));
+            myObstacles.push( new component(height, height, "violet", x, XXtop2));
+            myObstacles.push( new component(height, height, "grey", x + XXleft, XXtop));
         } else {
-            myObstacles.push( new component(height, height, "green", x + XXleft, XXtop));
+            myObstacles.push( new component(height, height, "grey", x + XXleft, XXtop));
         }
         
     }
@@ -162,9 +171,6 @@ function updateGameArea() {
     if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece.speedX = 2; }
     myGamePiece.newPos();
     myGamePiece.update();
-    
-    
-    
 }
 
 
