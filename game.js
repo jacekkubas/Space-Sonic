@@ -21,14 +21,24 @@ var myGameArea = {
         this.context = this.canvas.getContext("2d");
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20);
+        this.weapon = 'bullets';
         window.addEventListener('keydown', function (e) {
             myGamePiece.image.src = 'img/ship2.png';
             myGameArea.keys = (myGameArea.keys || []);
             myGameArea.keys[e.keyCode] = true;
-            if (e.keyCode == 32) {
+            if (e.keyCode == 32 && myGameArea.weapon == 'sonic') {
                 if(bullets.length < 1){
                     bullets.push(new component(1, 20, "#fff", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 15, "bullet"));
                 }
+            } else if (e.keyCode == 32 && myGameArea.weapon == 'bullets') {
+                if(bullets.length < 10){
+                    bullets.push(new component(20, 5, "#fff", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2.2, "bullet"));
+                }
+            } else if (e.keyCode == 49 ) {
+                myGameArea.weapon = 'sonic';
+                console.log(e);
+            } else if (e.keyCode == 50 ) {
+                myGameArea.weapon = 'bullets';
             }
         })
         window.addEventListener('keyup', function (e) {
@@ -51,7 +61,7 @@ function everyinterval(n) {
     return false;
 }
 
-function component(width, height, color, x, y, type, ship) {
+function component(width, height, color, x, y, type, destroy) {
     this.type = type
     if (type == "image" || type == "background" || type == "obstacle" || type == "ship"){
         this.image = new Image();
@@ -67,6 +77,9 @@ function component(width, height, color, x, y, type, ship) {
     this.y = y;
     if (type == 'ship') {
         this.ship = true;
+    }
+    if (destroy == 'destroy') {
+        this.destroy = true;
     }
     this.update = function() {
         ctx = myGameArea.context;
@@ -176,7 +189,7 @@ function updateGameArea() {
         XXtop2 = Math.floor(Math.random() * (maxTop-minTop+1) + minTop);
         
         if(myGameArea.frameNo > 400 ){
-            myObstacles.push( new component(height, height, "img/asteroid1.png", x, XXtop2, "obstacle"));
+            myObstacles.push( new component(height, height, "img/asteroid2.png", x, XXtop2, "obstacle", "destroy"));
             myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "obstacle"));
         } else {
             myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "obstacle"));
@@ -199,13 +212,28 @@ function updateGameArea() {
         bullets[i].x += 3;
         bullets[i].update();
     }
-    for (var i = 0; i < bullets.length; i++){
+    for (let i = 0; i < bullets.length; i++){
         var that = i;
-        for ( var i = 0; i < myObstacles.length; i++) {
-            if (bullets[that].crashWith(myObstacles[i])) {
-                myObstacles[i].hit = true;
+        
+        if (myGameArea.weapon == 'sonic'){
+            for ( let i = 0; i < myObstacles.length; i++) {
+                if (bullets[that].crashWith(myObstacles[i])) {
+                    myObstacles[i].hit = true;
+                }
+            }
+        } else if (myGameArea.weapon == 'bullets'){
+            for ( let i = 0; i < myObstacles.length; i++) {
+                if (bullets[that].crashWith(myObstacles[i]) && myObstacles[i].destroy == true) {
+                    myObstacles.splice(i, 1);
+                    bullets.splice(that, 1);
+                    return;
+                } else if (bullets[that].crashWith(myObstacles[i])) {
+                    bullets.splice(that, 1);
+                    return;
+                }
             }
         }
+        
     }
         
     
