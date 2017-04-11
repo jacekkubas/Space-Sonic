@@ -5,11 +5,19 @@ var myBackground;
 var bullets = [];
 var wynik;
 var name;
+var weapon;
+var sonicShot;
+var bulletShot;
+var bgloop;
 
 function startGame() {
     myBackground = new component(480, 270, "img/bg.png", 0, 0, "background");
     myGamePiece = new component(30, 24, "img/ship1.png", 10, 120, "ship");
+    weapon = new component(30, 30, "white", 20, 240, "weapons");
     myScore = new component("18px", "Consolas", "white", 360, 40, "text");
+    bgloop = new sound('audio/scifi-bass.wav');
+    sonicShot = new sound('audio/gun.mp3');
+    bulletShot = new sound('audio/gun.mp3');
     myGameArea.start();
 }
 
@@ -29,15 +37,19 @@ var myGameArea = {
             if (e.keyCode == 32 && myGameArea.weapon == 'sonic') {
                 if(bullets.length < 1){
                     bullets.push(new component(1, 20, "#fff", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 15, "bullet"));
+                    sonicShot.play();
                 }
             } else if (e.keyCode == 32 && myGameArea.weapon == 'bullets') {
                 if(bullets.length < 10){
                     bullets.push(new component(20, 5, "#fff", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2.2, "bullet"));
+                    bulletShot.play();
                 }
             } else if (e.keyCode == 49 ) {
                 myGameArea.weapon = 'sonic';
+                weapon.weapons = 'sonic';
                 console.log(e);
             } else if (e.keyCode == 50 ) {
+                weapon.weapons = 'bullets';
                 myGameArea.weapon = 'bullets';
             }
         })
@@ -78,6 +90,9 @@ function component(width, height, color, x, y, type, destroy) {
     if (type == 'ship') {
         this.ship = true;
     }
+    if (type == "weapons"){
+        this.weapon = 'sonic';
+    }
     if (destroy == 'destroy') {
         this.destroy = true;
     }
@@ -99,6 +114,14 @@ function component(width, height, color, x, y, type, destroy) {
             } else {
                 ctx.fillStyle = color;
                 ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        } else if (type == "weapons") {
+            if ( this.weapons == 'sonic'){
+                ctx.fillStyle = color;
+                ctx.fillRect(this.x + 6, this.y - 4, 3, 15);
+            } else {
+                ctx.fillStyle = color;
+                ctx.fillRect(this.x, this.y, 15, 3);
             }
         } else if (type == "obstacle") {
             if (this.x < -100){
@@ -156,13 +179,33 @@ function component(width, height, color, x, y, type, destroy) {
     
 }
 
+function sound(src){
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function () {
+        this.sound.play();
+    }
+    this.stop = function() {
+        this.sound.pause();
+    }
+}
+
 function updateGameArea() {
+    // music 
+    bgloop.play();
+    
+    
     // crash
     var x, y;
     for ( var i = 0; i < myObstacles.length; i++) {
         if (myGamePiece.crashWith(myObstacles[i])) {
             myGameArea.canvas.getContext('2d').drawImage(myGamePiece.bum, myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height);
             myGameArea.stop();
+            bgloop.stop();
             return;
         }
     }
@@ -184,11 +227,25 @@ function updateGameArea() {
         minTop = 0;
         maxTop = myGameArea.canvas.height;
         XXleft = Math.floor(Math.random() * (maxLeft-minLeft+1) + minLeft);
+        XXleft2 = Math.floor(Math.random() * (maxLeft-minLeft+1) + minLeft);
+        XXleft3 = Math.floor(Math.random() * (maxLeft-minLeft+1) + minLeft);
         height = Math.floor(Math.random() * (maxHeight-minHeight+1) + minHeight);
         XXtop = Math.floor(Math.random() * (maxTop-minTop+1) + minTop);
         XXtop2 = Math.floor(Math.random() * (maxTop-minTop+1) + minTop);
+        XXtop3 = Math.floor(Math.random() * (maxTop-minTop+1) + minTop);
+        XXtop4 = Math.floor(Math.random() * (maxTop-minTop+1) + minTop);
         
-        if(myGameArea.frameNo > 400 ){
+        if(myGameArea.frameNo > 1200 ){
+            
+            myObstacles.push( new component(height, height, "img/asteroid2.png", x + XXleft2, XXtop3, "obstacle", "destroy"));
+            myObstacles.push( new component(height, height, "img/asteroid2.png", x, XXtop2, "obstacle", "destroy"));
+            myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "obstacle"));
+            myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft3, XXtop4, "obstacle"));
+        } else if(myGameArea.frameNo > 800 ){
+            myObstacles.push( new component(height, height, "img/asteroid2.png", x + XXleft2, XXtop3, "obstacle", "destroy"));
+            myObstacles.push( new component(height, height, "img/asteroid2.png", x, XXtop2, "obstacle", "destroy"));
+            myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "obstacle"));
+        } else if(myGameArea.frameNo > 400 ){
             myObstacles.push( new component(height, height, "img/asteroid2.png", x, XXtop2, "obstacle", "destroy"));
             myObstacles.push( new component(height, height, "img/asteroid1.png", x + XXleft, XXtop, "obstacle"));
         } else {
@@ -199,6 +256,9 @@ function updateGameArea() {
     for (var i = 0; i < myObstacles.length; i++) {
         if (myObstacles[i].hit == true){
             myObstacles[i].x += -1;
+            myObstacles[i].update();
+        } else if (myGameArea.frameNo > 2000){
+            myObstacles[i].x += -3;
             myObstacles[i].update();
         } else {
             myObstacles[i].x += -2;
@@ -240,6 +300,9 @@ function updateGameArea() {
     // score
     myScore.text="SCORE: " + myGameArea.frameNo;
     myScore.update();
+    
+    // weapon
+    weapon.update();
     
     
     // my game piece

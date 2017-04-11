@@ -33,6 +33,10 @@ $(document).ready(function() {
         startGame();
     });
     
+    // auto start
+    $('canvas').addClass('active');
+    $('.btns').addClass('active');
+    startGame();
     
     
 })
