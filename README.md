@@ -1,1 +1,1 @@
-pong
+moja pierwsza gra
