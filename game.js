@@ -9,15 +9,19 @@ var weapon;
 var sonicShot;
 var bulletShot;
 var bgloop;
+var bgloop2;
+var crashSound;
 
 function startGame() {
     myBackground = new component(480, 270, "img/bg.png", 0, 0, "background");
     myGamePiece = new component(30, 24, "img/ship1.png", 10, 120, "ship");
     weapon = new component(30, 30, "white", 20, 240, "weapons");
     myScore = new component("18px", "Consolas", "white", 360, 40, "text");
-    bgloop = new sound('audio/scifi-bass.wav');
-    sonicShot = new sound('audio/gun.mp3');
-    bulletShot = new sound('audio/gun.mp3');
+    bgloop = new sound('audio/bg-loop5.mp3');
+    bgloop2 = new sound('audio/bg-loop6.mp3');
+    sonicShot = new sound('audio/sonic.wav');
+    bulletShot = new sound('audio/bullet.wav');
+    crashSound = new sound('audio/crash.wav');
     myGameArea.start();
 }
 
@@ -43,6 +47,7 @@ var myGameArea = {
                 if(bullets.length < 10){
                     bullets.push(new component(20, 5, "#fff", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2.2, "bullet"));
                     bulletShot.play();
+                    console.log(bullets.length)
                 }
             } else if (e.keyCode == 49 ) {
                 myGameArea.weapon = 'sonic';
@@ -51,6 +56,9 @@ var myGameArea = {
             } else if (e.keyCode == 50 ) {
                 weapon.weapons = 'bullets';
                 myGameArea.weapon = 'bullets';
+            }
+            else if (e.keyCode == 82 ) {
+                restart();
             }
         })
         window.addEventListener('keyup', function (e) {
@@ -206,6 +214,7 @@ function updateGameArea() {
             myGameArea.canvas.getContext('2d').drawImage(myGamePiece.bum, myGamePiece.x, myGamePiece.y, myGamePiece.width, myGamePiece.height);
             myGameArea.stop();
             bgloop.stop();
+            crashSound.play();
             return;
         }
     }
@@ -319,6 +328,7 @@ function updateGameArea() {
 
 function restart() {
     clearInterval(myGameArea.interval);
+    bgloop.stop();
     myGamePiece = 0;
     myObstacles = [];
     myScore = 0;
