@@ -34,9 +34,9 @@ $(document).ready(function() {
     });
     
     // auto start
-    $('canvas').addClass('active');
-    $('.btns').addClass('active');
-    startGame();
-    
-    
+    window.onload = function () {
+        $('canvas').addClass('active');
+        $('.btns').addClass('active');
+        startGame();
+    }
 })
