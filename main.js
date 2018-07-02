@@ -20,7 +20,6 @@ $(document).ready(function() {
     $('#wyniki').submit(function(e) {
         e.preventDefault();
         var data = $(this).serializeFormJSON();
-        console.log(data);
     });
     
     $('#form').submit(function(e) {
