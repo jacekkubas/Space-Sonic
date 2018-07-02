@@ -1,1 +1,1 @@
-moja pierwsza gra
+My first pure javascript game. Far from over.

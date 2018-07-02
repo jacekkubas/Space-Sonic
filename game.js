@@ -340,8 +340,3 @@ function restart() {
 function pause() {
     clearInterval(myGameArea.interval);
 }
-
-
-
-
-
