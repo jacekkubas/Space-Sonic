@@ -34,34 +34,6 @@ var myGameArea = {
         this.frameNo = 0;
         this.interval = setInterval(updateGameArea, 20);
         this.weapon = 'bullets';
-        window.addEventListener('keydown', function (e) {
-            myGamePiece.image.src = 'img/ship2.png';
-            myGameArea.keys = (myGameArea.keys || []);
-            myGameArea.keys[e.keyCode] = true;
-            if (e.keyCode == 32 && myGameArea.weapon == 'sonic') {
-                if (bullets.length < 1) {
-                    bullets.push(new component(1, 20, "#fff", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 15, "bullet"));
-                    sonicShot.play();
-                }
-            } else if (e.keyCode == 32 && myGameArea.weapon == 'bullets') {
-                if (bullets.length < 10) {
-                    bullets.push(new component(20, 5, "#fff", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2.2, "bullet"));
-                    bulletShot.play();
-                }
-            } else if (e.keyCode == 49) {
-                myGameArea.weapon = 'sonic';
-                weapon.weapons = 'sonic';
-            } else if (e.keyCode == 50) {
-                weapon.weapons = 'bullets';
-                myGameArea.weapon = 'bullets';
-            } else if (e.keyCode == 82) {
-                restart();
-            }
-        })
-        window.addEventListener('keyup', function (e) {
-            myGamePiece.image.src = 'img/ship1.png';
-            myGameArea.keys[e.keyCode] = false;
-        })
     },
     clear: function () {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -203,7 +175,6 @@ function sound(src) {
 function updateGameArea() {
     // music 
     bgloop.play();
-
 
     // crash
     var x, y;
@@ -348,3 +319,42 @@ function restart() {
 function pause() {
     clearInterval(myGameArea.interval);
 }
+
+function keyPressed (e) {
+    myGamePiece.image.src = 'img/ship2.png';
+    myGameArea.keys = (myGameArea.keys || []);
+    myGameArea.keys[e.keyCode] = true;
+    if (e.keyCode == 32 && myGameArea.weapon == 'sonic') {
+        if (bullets.length < 1) {
+            bullets.push(new component(1, 20, "#fff", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 15, "bullet"));
+            sonicShot.play();
+        }
+    } else if (e.keyCode == 32 && myGameArea.weapon == 'bullets') {
+        if (bullets.length < 10) {
+            bullets.push(new component(20, 5, "#fff", myGamePiece.x + myGamePiece.width, myGamePiece.y + myGamePiece.height / 2.2, "bullet"));
+            bulletShot.play();
+        }
+    } 
+    
+    if (e.keyCode == 49) {
+        myGameArea.weapon = 'sonic';
+        weapon.weapons = 'sonic';
+    }
+    
+    if (e.keyCode == 50) {
+        weapon.weapons = 'bullets';
+        myGameArea.weapon = 'bullets';
+    }
+    
+    if (e.keyCode == 82) {
+        restart();
+    }
+}
+
+function keyUp (e) {
+    myGamePiece.image.src = 'img/ship1.png';
+    myGameArea.keys[e.keyCode] = false;
+}
+
+window.addEventListener('keydown', keyPressed);
+window.addEventListener('keyup', keyUp);
